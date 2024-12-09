@@ -1,0 +1,33 @@
+CREATE OR REPLACE PACKAGE PKG_ALUNO AS
+    -- Procedure para exclusão de aluno
+    PROCEDURE EXCLUIR_ALUNO(P_ID_ALUNO IN NUMBER);
+
+    -- Cursor para listar alunos maiores de 18 anos
+    CURSOR CURSOR_ALUNOS_MAIORES IS
+        SELECT NOME, DATA_NASCIMENTO
+        FROM ALUNOS
+        WHERE TRUNC(MONTHS_BETWEEN(SYSDATE, DATA_NASCIMENTO) / 12) > 18;
+
+    -- Cursor para listar alunos por curso
+    CURSOR CURSOR_ALUNOS_POR_CURSO(P_ID_CURSO IN NUMBER) IS
+        SELECT A.NOME
+        FROM ALUNOS A
+        JOIN MATRICULAS M ON A.ID_ALUNO = M.ID_ALUNO
+        WHERE M.ID_CURSO = P_ID_CURSO;
+END PKG_ALUNO;
+/
+
+CREATE OR REPLACE PACKAGE BODY PKG_ALUNO AS
+    PROCEDURE EXCLUIR_ALUNO(P_ID_ALUNO IN NUMBER) IS
+    BEGIN
+        -- Excluir matrículas associadas ao aluno
+        DELETE FROM MATRICULAS WHERE ID_ALUNO = P_ID_ALUNO;
+
+        -- Excluir o aluno da tabela ALUNOS
+        DELETE FROM ALUNOS WHERE ID_ALUNO = P_ID_ALUNO;
+
+        -- Confirmação opcional
+        DBMS_OUTPUT.PUT_LINE('Aluno e matrículas associadas excluídos com sucesso.');
+    END EXCLUIR_ALUNO;
+END PKG_ALUNO;
+/
